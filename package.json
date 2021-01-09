@@ -1,0 +1,26 @@
+{
+  "name": "y",
+  "version": "1.0.0",
+  "description": "simple API to schedule emails and send them ",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pseudoamit/job-scheduler-with-mail-provider.git"
+  },
+  "author": "Amit Roy",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pseudoamit/job-scheduler-with-mail-provider/issues"
+  },
+  "homepage": "https://github.com/pseudoamit/job-scheduler-with-mail-provider#readme",
+  "dependencies": {
+    "@sendgrid/mail": "^7.4.1",
+    "express": "^4.17.1",
+    "mongoose": "^5.11.11",
+    "node-cron": "^2.0.3"
+  }
+}
