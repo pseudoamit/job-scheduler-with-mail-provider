@@ -4,18 +4,21 @@ const keys = require("../config/keys");
 sgMail.setApiKey(keys.sendgridAPI);
 
 module.exports = {
-  sendMail: function () {
+  sendMail: function (data) {
+    const recipient = data.email.map((e) => ({
+      email: e,
+    }));
     const msg = {
-      to: ["amitroygcettb15@gmail.com", "arundas141195@gmail.com"],
+      to: recipient,
       from: "aroy9930@gmail.com",
-      subject: "Sending with SendGrid is Fun",
-      text: "and easy to do anywhere, even with Node.js",
+      subject: data.subject,
+      text: data.body,
       html: "<strong>and easy to do anywhere, even with Node.js</strong>",
     };
 
     sgMail
       .send(msg)
-      .then(() => {
+      .then((res) => {
         console.log("Email sent");
       })
       .catch((error) => {

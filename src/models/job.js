@@ -6,6 +6,7 @@ const schedulerSchema = new Schema({
   time: { type: Date },
   subject: { type: String },
   body: { type: String },
+  isFailed: { type: Boolean, default: false },
 });
 
 module.exports = mongoose.model("scheduler", schedulerSchema);
