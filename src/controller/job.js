@@ -14,13 +14,21 @@ const exportable = {
       if (data) {
         const id = data._id;
         const date = createTime(data.time);
-        var j = schedule.scheduleJob(id, new Date(date), function () {
-          sendMail(data);
+
+        var j = await schedule.scheduleJob(id, new Date(date), async () => {
+          try {
+            sendMail(data);
+          } catch (error) {
+            await schedulerModel.findByIdAndUpdate(id, { isFailed: true });
+          }
         });
-        res.send(data);
-        if (!j) {
-          schedulerModel.findByIdAndUpdate(id, { isFailed: true });
+        if (j) {
+          res.send(data);
+        } else {
+          res.status(400).send({ message: "error in scheduling job" });
         }
+      } else {
+        res.status(400).send({ message: "error in inserting the data" });
       }
     } catch (error) {
       res.status(400).send(error);
@@ -31,38 +39,42 @@ const exportable = {
     try {
       const id = req.body._id;
       const updatedData = req.body;
-      delete updatedData._id;
       const data = await schedulerModel.findByIdAndUpdate(id, updatedData, {
         new: true,
       });
       if (data) {
         const date = createTime(data.time);
         var my_job = schedule.scheduledJobs[id];
-        my_job = schedule.rescheduleJob(new Date(date), function () {
-          sendMail(data);
+        my_job.cancel();
+        var j = await schedule.scheduleJob(id, new Date(date), async () => {
+          try {
+            sendMail(data);
+          } catch (error) {
+            await schedulerModel.findByIdAndUpdate(id, { isFailed: true });
+          }
         });
-        if (!my_job) {
-          schedulerModel.findByIdAndUpdate(id, { isFailed: true });
+        if (j) {
+          res.send(data);
+        } else {
+          res.status(400).send({ message: "error in rescheduling job" });
         }
       } else {
         res.status(400).send({ message: "No data found" });
       }
     } catch (error) {
-      console.log(error);
       res.status(400).send(error);
     }
   },
 
   list: async (req, res) => {
     try {
-      const data = await schedulerModel.findOne();
+      const data = await schedulerModel.find();
       if (data) {
         res.send(data);
       } else {
         res.status(400).send({ message: "No data found" });
       }
     } catch (error) {
-      console.log(error);
       res.status(400).send(error);
     }
   },
@@ -70,14 +82,13 @@ const exportable = {
   read: async (req, res) => {
     try {
       const { id } = req.params;
-      const data = await schedulerModel.findOne({ _id: id, isFailed: false });
+      const data = await schedulerModel.findById(id);
       if (data) {
         res.send(data);
       } else {
         res.status(400).send({ message: "No data found" });
       }
     } catch (error) {
-      console.log(error);
       res.status(400).send(error);
     }
   },
@@ -85,28 +96,30 @@ const exportable = {
   delete: async (req, res) => {
     try {
       const { id } = req.params;
-      const data = await schedulerModel.findOne({ _id: id, isFailed: false });
+      const data = await schedulerModel.findByIdAndUpdate(
+        id,
+        { isFailed: true },
+        { new: true }
+      );
       if (data) {
         var my_job = schedule.scheduledJobs[id];
         my_job.cancel();
         res.status(200).send({ message: "Job cancelled successfully" });
       }
     } catch (error) {
-      console.log(error);
       res.status(400).send(error);
     }
   },
 
   fail: async (req, res) => {
     try {
-      const data = await schedulerModel.findOne({ isFailed: true });
+      const data = await schedulerModel.find({ isFailed: true });
       if (data) {
         res.send(data);
       } else {
         res.status(400).send({ message: "No data found" });
       }
     } catch (error) {
-      console.log(error);
       res.status(400).send(error);
     }
   },
